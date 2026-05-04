@@ -1,0 +1,42 @@
+[package]
+name = "rig-ballista"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+authors = ["Azreal Contributors"]
+description = "Apache Ballista + DataFusion + Iceberg companion crate for rig-compose. Scaffolding; iceberg-rust integration pending toolchain verification."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/ForeverAngry/rig-ballista"
+readme = "README.md"
+keywords = ["rig", "ballista", "iceberg", "datafusion", "agent"]
+categories = ["asynchronous", "database"]
+
+[dependencies]
+# Concrete deps land once the iceberg-rust + datafusion-iceberg + ballista
+# combination is verified on a recent stable toolchain. Until then the
+# crate ships a placeholder type so downstream consumers can pin a
+# version and add the dep ahead of the implementation.
+
+# Planned (commented until the throwaway verification passes):
+# rig-compose = { path = "../rig-compose", version = "0.1" }
+# iceberg = { version = "0.8", default-features = false }
+# datafusion = "44"
+# ballista = "0.12"
+
+[lints.clippy]
+dbg_macro = "forbid"
+await_holding_lock = "deny"
+await_holding_refcell_ref = "deny"
+expect_used = "deny"
+expect_fun_call = "deny"
+indexing_slicing = "deny"
+panic = "deny"
+panic_in_result_fn = "deny"
+todo = "forbid"
+unimplemented = "forbid"
+unreachable = "deny"
+unwrap_used = "deny"
+
+[profile.release]
+lto = true
+opt-level = "s"

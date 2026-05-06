@@ -12,16 +12,24 @@ keywords = ["rig", "ballista", "iceberg", "datafusion", "agent"]
 categories = ["asynchronous", "database"]
 
 [dependencies]
-# Concrete deps land once the iceberg-rust + datafusion-iceberg + ballista
-# combination is verified on a recent stable toolchain. Until then the
-# crate ships a placeholder type so downstream consumers can pin a
-# version and add the dep ahead of the implementation.
+# The `MetadataCatalog` trait + `InMemoryMetadataCatalog` reference impl
+# are domain-neutral and ship today. Concrete Iceberg/Ballista wiring
+# lands once the iceberg-rust + datafusion-iceberg + ballista
+# combination is verified on a recent stable toolchain.
+async-trait = "0.1"
+dashmap = "6.1"
+serde = { version = "1.0", features = ["derive"] }
+thiserror = "1.0"
+uuid = { version = "1.10", features = ["v4", "serde"] }
 
 # Planned (commented until the throwaway verification passes):
 # rig-compose = { path = "../rig-compose", version = "0.1" }
 # iceberg = { version = "0.8", default-features = false }
 # datafusion = "44"
 # ballista = "0.12"
+
+[dev-dependencies]
+tokio = { version = "1.40", features = ["rt-multi-thread", "macros"] }
 
 [lints.clippy]
 dbg_macro = "forbid"

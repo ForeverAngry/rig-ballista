@@ -3,12 +3,10 @@
 //! Apache Ballista + DataFusion + Iceberg companion crate for
 //! [`rig-compose`](https://crates.io/crates/rig-compose).
 //!
-//! **Status:** scaffolding. The intent is to provide a `MetadataCatalog`-
-//! shaped trait impl that reads Iceberg tables (via `datafusion-iceberg`)
-//! and pushes prunable scans through a Ballista distributed query engine.
-//! The seam exists today as `azreal::storage::MetadataCatalog`; this
-//! crate will plug behind it without re-exporting Iceberg/Ballista types
-//! into the rig-compose surface.
+//! **Status:** the [`catalog::MetadataCatalog`] trait and the
+//! [`catalog::InMemoryMetadataCatalog`] reference implementation ship
+//! today. The Iceberg + Ballista-backed catalog will plug into the
+//! same trait once the upstream toolchain stabilises.
 //!
 //! ## Why a separate crate
 //! - **MSRV isolation.** `iceberg-rust` 0.9 currently requires rustc 1.92;
@@ -20,40 +18,53 @@
 //!   file-format boundary. Keeping it behind a trait keeps the skill/tool
 //!   surface clean.
 //!
-//! ## Planned surface
+//! ## Pruning seam
 //!
-//! ```ignore
-//! pub trait MetadataCatalog: Send + Sync {
-//!     async fn list_files(&self, partition: Option<&str>) -> Result<Vec<FileStats>, StorageError>;
-//!     async fn get(&self, id: FileId) -> Result<FileStats, StorageError>;
-//! }
+//! Downstream agents store per-file sketches (HLL, variance, grammar
+//! histograms — whatever their pruner needs) and reach the catalog
+//! through [`catalog::MetadataCatalog`]:
 //!
-//! pub struct BallistaIcebergCatalog { /* ... */ }
-//! impl MetadataCatalog for BallistaIcebergCatalog { /* ... */ }
+//! ```no_run
+//! use rig_ballista::{FileId, FileStats, InMemoryMetadataCatalog, MetadataCatalog};
+//!
+//! #[derive(Clone)]
+//! struct MySketch { distinct: u64, variance: f64 }
+//!
+//! # async fn run() -> Result<(), Box<dyn std::error::Error>> {
+//! let cat = InMemoryMetadataCatalog::<MySketch>::new();
+//! cat.insert(FileStats {
+//!     id: FileId::new(),
+//!     partition: "auth-edge".into(),
+//!     sketch: MySketch { distinct: 1024, variance: 0.7 },
+//! });
+//! let files = cat.list_files(None).await?;
+//! let _ = files;
+//! # Ok(()) }
 //! ```
-//!
-//! Concrete code will land once a throwaway companion verifies the
-//! `iceberg-rust` + `datafusion-iceberg` + `ballista` combination
-//! compiles on a recent stable toolchain.
 
 #![doc(html_root_url = "https://docs.rs/rig-ballista/0.1.0")]
+#![deny(missing_docs)]
 
-/// Placeholder until the real catalog implementation lands.
+pub mod catalog;
+
+pub use catalog::{FileId, FileStats, InMemoryMetadataCatalog, MetadataCatalog, StorageError};
+
+/// Placeholder type retained for backward compatibility with the
+/// initial `0.1.0` scaffolding release. Prefer
+/// [`catalog::InMemoryMetadataCatalog`] for new code; this type will
+/// be removed in `0.2`.
+#[deprecated(
+    since = "0.1.1",
+    note = "use `rig_ballista::catalog::InMemoryMetadataCatalog` instead"
+)]
 #[derive(Debug, Default, Clone, Copy)]
 pub struct PlaceholderCatalog;
 
+#[allow(deprecated)]
 impl PlaceholderCatalog {
+    /// Mint a new placeholder. Prefer
+    /// [`catalog::InMemoryMetadataCatalog::new`] for new code.
     pub const fn new() -> Self {
         Self
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn placeholder_constructs() {
-        let _ = PlaceholderCatalog::new();
     }
 }

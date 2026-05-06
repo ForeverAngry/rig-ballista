@@ -9,7 +9,30 @@ from [Conventional Commits](https://www.conventionalcommits.org/).
 
 ## [Unreleased]
 
-## [0.1.0] - Unreleased
+### Added
+
+- `catalog` module: domain-neutral `MetadataCatalog<S>` trait,
+  `FileId`/`FileStats<S>`/`StorageError` types, and an
+  `InMemoryMetadataCatalog<S>` reference implementation. Lifted from
+  Azrael so any rig-compose agent can prune column-store scans against
+  per-file sketches without coupling to Iceberg or Ballista. The
+  Iceberg + Ballista-backed catalog will plug into the same trait once
+  the upstream toolchain stabilises.
+- `MetadataCatalog::list_files` is fallible from the first public catalog
+  surface, so future object-store/Iceberg enumeration errors can propagate
+  as `StorageError` instead of being collapsed into an empty file list.
+- `StorageError::Backend` now carries a boxed `#[source]` error and a
+  `StorageError::backend(err)` constructor, so backend implementations can
+  preserve the original error chain instead of stringifying it.
+
+### Deprecated
+
+- `PlaceholderCatalog` is retained for source compatibility but is
+  deprecated; prefer
+  [`catalog::InMemoryMetadataCatalog`](catalog/struct.InMemoryMetadataCatalog.html)
+  for new code. It will be removed in `0.2`.
+
+## [0.1.0] - 2026-05-04
 
 ### Added
 

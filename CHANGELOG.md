@@ -9,6 +9,12 @@ from [Conventional Commits](https://www.conventionalcommits.org/).
 
 ## [Unreleased]
 
+## [0.1.1](https://github.com/ForeverAngry/rig-ballista/compare/v0.1.0...v0.1.1) - 2026-05-06
+
+### Added
+
+- Add metadata catalog seam
+
 ### Added
 
 - `catalog` module: domain-neutral `MetadataCatalog<S>` trait,
